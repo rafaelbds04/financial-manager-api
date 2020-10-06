@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOne } from "typeorm";
 import User from '../users/user.entity';
 import Category from '../categories/category.entity';
 import Attachment from '../attachments/attachment.entity';
 
-enum TransactionType {
+export enum TransactionType {
     EXPENSE = 'expense',
     REVENUE = 'revenue'
 }
@@ -16,11 +16,13 @@ class Transaction {
     @Column()
     public name: string
 
-    @OneToOne(() => User)
+    @ManyToOne(() => User, (author: User) => author.id)
     @JoinColumn()
     public author: User
 
-    @Column()
+    @Column({
+        default: 'Does not have description'
+    })
     public description?: string
 
     @Column({
@@ -30,7 +32,9 @@ class Transaction {
     })
     public transactionType: TransactionType
 
-    @Column()
+    @Column({ 
+        type: 'decimal'
+    })
     public amount: number
 
     @Column({ type: 'date' })
@@ -42,7 +46,7 @@ class Transaction {
     @Column({ type: 'boolean' })
     public paid: boolean
 
-    @OneToOne(() => Category)
+    @ManyToOne(() => Category, (category: Category) => category.id)
     @JoinColumn()
     public category: Category
 

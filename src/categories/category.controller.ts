@@ -1,4 +1,5 @@
-import { Controller, Get, UseGuards, UseInterceptors, ClassSerializerInterceptor, Param, Post, Body } from "@nestjs/common";
+import { Controller, Get, UseGuards, UseInterceptors, ClassSerializerInterceptor, 
+    Param, Post, Body } from "@nestjs/common";
 import CategoryService from './category.service';
 import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
 import Category from "./category.entity";
