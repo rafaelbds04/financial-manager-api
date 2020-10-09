@@ -19,7 +19,7 @@ export default class AttachmentService {
         private readonly configService: ConfigService
     ) { }
 
-    async createAttachment(transaction: Transaction, fileBuffer: Buffer): Promise<Attachment> {
+    async createAttachment(fileBuffer: Buffer, transaction?: Transaction): Promise<Attachment> {
         try {
             const fileUuid = uuid()
             await sharp(fileBuffer).resize({ quality: 70 }).toFile(
@@ -52,6 +52,15 @@ export default class AttachmentService {
 
         throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
 
+    }
+
+    async addAttachmentToTransaction(attachmentId: number, transaction: Transaction): Promise<Attachment> {
+        await this.attachmentRepository.update({ id: attachmentId }, { transaction })
+        const updatedAttachment = await this.attachmentRepository.findOne(attachmentId);
+        if (updatedAttachment) {
+            return updatedAttachment;
+        }
+        throw new HttpException('Attachment not found', HttpStatus.NOT_FOUND);
     }
 
     //Function to delete attachments of a transaction by id
