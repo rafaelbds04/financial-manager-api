@@ -1,16 +1,15 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
-import Transaction from './transaction.entity';
+import Transaction, { TransactionType } from './transaction.entity';
 import { Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/createTransaction.dto';
-import { Express } from 'express'
 import User from '../users/user.entity';
 import AttachmentService from '../attachments/attachment.service';
 import TransactionNotFoundException from './errorExecptions/transactionNotFound.exception';
 import Attachment from '../attachments/attachment.entity';
-import { async } from "rxjs";
 import { UpdateTransactionDto } from './dto/updateTransaction.dto';
 
+type TransactionTypeString = keyof typeof TransactionType
 
 @Injectable()
 export default class TransactionService {
@@ -41,24 +40,26 @@ export default class TransactionService {
 
     async createTransaction(user: User, transactionData: CreateTransactionDto,
         files: Express.Multer.File[]): Promise<Transaction> {
+        const { receiptAttachment, ...transactionInputData } = transactionData;
+
         const newTransaction = this.transactionRepository.create({
-            ...transactionData,
+            ...transactionInputData,
             author: user,
         })
 
         const createdTransaction = await this.transactionRepository.save(newTransaction);
 
         files.forEach(async (file: Express.Multer.File) => {
-            await this.attachmentService.createAttachment(createdTransaction, file.buffer)
+            await this.attachmentService.createAttachment(file.buffer, createdTransaction)
         })
 
-        return createdTransaction;
+        receiptAttachment ?
+            this.attachmentService.addAttachmentToTransaction(receiptAttachment, createdTransaction) : ''
 
+        return createdTransaction;
     }
 
     async updateTransaction(transactionId: number, trabsactionData: UpdateTransactionDto): Promise<Transaction> {
-        console.log(transactionId);
-        console.log(trabsactionData);
         await this.transactionRepository.update({ id: transactionId }, trabsactionData)
         const updatedTransaction = await this.transactionRepository.findOne(transactionId);
         if (updatedTransaction) {
@@ -67,7 +68,7 @@ export default class TransactionService {
         throw new TransactionNotFoundException(transactionId);
     }
 
-    async deleteTransaction(transactionId: number): Promise<any> {
+    async deleteTransaction(transactionId: number): Promise<void> {
         try {
             const transactionToDelete = await this.transactionRepository.findOne(transactionId, {
                 relations: ['attachments']
@@ -87,7 +88,48 @@ export default class TransactionService {
             if (error?.status === 404) throw new TransactionNotFoundException(transactionId);
             throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
+    async getTotalByTypeOfThisMonth(type: TransactionTypeString): Promise<number> {
+        try {
+            const data = await this.transactionRepository.manager.
+                createQueryBuilder(Transaction, 'Transaction')
+                .where("Transaction.transactionType = :type", { type: type.toLowerCase() })
+                .andWhere("Transaction.transactionDate >= date_trunc('month', CURRENT_DATE)")
+                .select("SUM(Transaction.amount)", "total")
+                .getRawOne();
+            return data.total;
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async getTotalDue(): Promise<number> {
+        try {
+            const data = await this.transactionRepository.manager.
+                createQueryBuilder(Transaction, 'Transaction')
+                .where("Transaction.paid = :paid", { paid: false })
+                .andWhere("Transaction.dueDate >= date_trunc('hour', CURRENT_DATE)")
+                .select("SUM(Transaction.amount)", "total")
+                .getRawOne();
+            return data.total;
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async getTotalOverDue(): Promise<number> {
+        try {
+            const data = await this.transactionRepository.manager.
+                createQueryBuilder(Transaction, 'Transaction')
+                .where("Transaction.paid = :paid", { paid: false })
+                .andWhere("Transaction.dueDate < date_trunc('hour', CURRENT_DATE)")
+                .select("SUM(Transaction.amount)", "total")
+                .getRawOne();
+            return data.total;
+        } catch (error) {
+            console.log(error)
+        }
     }
 
 }

@@ -37,11 +37,11 @@ class Transaction {
     })
     public amount: number
 
-    @Column({ type: 'date' })
-    public transactionDate: string
+    @Column({ type: 'timestamp' })
+    public transactionDate: Date
 
-    @Column({ type: 'date' })
-    public dueDate: string
+    @Column({ type: 'timestamp', nullable: true})
+    public dueDate?: Date
 
     @Column({ type: 'boolean' })
     public paid: boolean

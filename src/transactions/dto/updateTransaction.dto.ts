@@ -25,11 +25,11 @@ export class UpdateTransactionDto {
 
     @IsDateString()
     @IsOptional()
-    public transactionDate: string
+    public transactionDate: Date
 
     @IsDateString()
     @IsOptional()
-    public dueDate: string
+    public dueDate?: Date
 
     @IsDefined()
     @IsOptional()

@@ -26,7 +26,6 @@ export default class TransactionController {
     @Get(':id')
     @UseGuards(JwtAuthenticationGuard)
     async getTransactionsById(@Param() { id }: FindOneParams) {
-        console.log(id)
         return await this.transactionService.getTransactionById(Number(id));
     }
 
@@ -37,8 +36,6 @@ export default class TransactionController {
         @Req() request: RequestWithUser,
         @Body() transactionData: CreateTransactionDto,
         @UploadedFiles() files: Express.Multer.File[]) {
-            console.log(transactionData);
-
         return this.transactionService.createTransaction(request.user, transactionData, files)
     }
 
@@ -46,7 +43,6 @@ export default class TransactionController {
     @UseGuards(JwtAuthenticationGuard)
     async updateTransaction(@Param() { id }: FindOneParams,
         @Body() transactionToUpdateData: UpdateTransactionDto): Promise<Transaction> {
-            console.log(transactionToUpdateData);
         return await this.transactionService.updateTransaction(Number(id), transactionToUpdateData)
     }
 

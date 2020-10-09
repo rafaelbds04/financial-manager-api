@@ -1,4 +1,4 @@
-import { IsDefined, IsString, IsOptional, IsNotEmpty, IsEnum, IsNumber, IsDate, IsBoolean, IsDecimal, IsDateString } from "class-validator"
+import { IsDefined, IsString, IsOptional, IsNotEmpty, IsEnum, IsDecimal, IsDateString } from "class-validator"
 import { TransactionType } from '../transaction.entity';
 import Category from "src/categories/category.entity";
 
@@ -24,11 +24,11 @@ export class CreateTransactionDto {
 
     @IsDefined()
     @IsDateString()
-    public transactionDate: string
+    public transactionDate: Date
 
-    @IsDefined()
+    @IsOptional()
     @IsDateString()
-    public dueDate: string
+    public dueDate?: Date
 
     @IsDefined()
     // @IsBoolean()
@@ -39,4 +39,6 @@ export class CreateTransactionDto {
     @IsString()
     public category: Category
 
+    @IsOptional()
+    public receiptAttachment?: number
 }
