@@ -19,7 +19,7 @@ class CategoryService {
 
     async getCategoryById(id: number): Promise<Category> {
         const category = this.categoryRepository.findOne({ id: Number(id) })
-        if(category) return category;
+        if (category) return category;
         throw new HttpException('This category does not exist', HttpStatus.NOT_FOUND)
     }
 
@@ -43,6 +43,18 @@ class CategoryService {
     async getAllCategoriesByType(categoryType: CategoryType): Promise<Category[]> {
         const result = await this.categoryRepository.find({ where: [{ categoryType }] })
         return result;
+    }
+
+    async deleteCategoryById(id: number): Promise<void> {
+        try {
+            const category = await this.categoryRepository.delete({ id: Number(id) })
+            if (!category.affected) {
+                throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+            }
+        } catch (error) {
+            throw new HttpException('Something with that wrong',
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

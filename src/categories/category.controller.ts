@@ -1,10 +1,13 @@
-import { Controller, Get, UseGuards, UseInterceptors, ClassSerializerInterceptor, 
-    Param, Post, Body } from "@nestjs/common";
+import {
+    Controller, Get, UseGuards, UseInterceptors, ClassSerializerInterceptor,
+    Param, Post, Body, Delete
+} from "@nestjs/common";
 import CategoryService from './category.service';
 import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
 import Category from "./category.entity";
 import FindByCategoryParams from './findByCategoryParams';
 import CreateCategoryDto from './dto/createCategory.dto';
+import FindOneParams from "src/utils/findOneParams";
 
 
 @Controller('categories')
@@ -31,6 +34,13 @@ class CategoryController {
     @UseGuards(JwtAuthenticationGuard)
     async createNewCategory(@Body() category: CreateCategoryDto): Promise<Category> {
         return this.categoryService.createCategory(category)
+    }
+
+    @Delete(':id')
+    @UseGuards(JwtAuthenticationGuard)
+    async deleteCategory(
+        @Param() { id }: FindOneParams): Promise<void> {
+        return this.categoryService.deleteCategoryById(Number(id));
     }
 
 }

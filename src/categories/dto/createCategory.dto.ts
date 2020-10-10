@@ -14,5 +14,5 @@ export default class CreateCategoryDto {
     @IsDefined()
     @IsNotEmpty()
     @IsEnum(CategoryType)
-    type: CategoryType
+    categoryType: CategoryType
 }
