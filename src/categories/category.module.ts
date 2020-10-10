@@ -8,5 +8,6 @@ import CategoryController from './category.controller';
     imports: [TypeOrmModule.forFeature([Category])],
     controllers: [CategoryController],
     providers: [CategoryService],
+    exports: [CategoryService]
 })
 export default class CategoryModule { }

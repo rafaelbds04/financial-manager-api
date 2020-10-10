@@ -17,6 +17,12 @@ class CategoryService {
         return this.categoryRepository.find();
     }
 
+    async getCategoryById(id: number): Promise<Category> {
+        const category = this.categoryRepository.findOne({ id: Number(id) })
+        if(category) return category;
+        throw new HttpException('This category does not exist', HttpStatus.NOT_FOUND)
+    }
+
     async createCategory(categoryData: CreateCategoryDto): Promise<Category> {
         try {
             const newCategory = this.categoryRepository.create(categoryData);

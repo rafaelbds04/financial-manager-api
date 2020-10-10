@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 import DatabaseModule from './database/database.module';
 import UserModule from './users/user.module';
@@ -9,7 +9,7 @@ import TransactionModule from './transactions/transaction.module';
 import AttachmentModule from './attachments/attachment.module';
 import ReceiptModule from './receipt/receipt.module';
 import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
-import path, { join } from 'path';
+import { join } from 'path';
 import StatsModule from './stats/stats.module';
 
 @Module({

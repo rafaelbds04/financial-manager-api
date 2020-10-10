@@ -19,6 +19,12 @@ export default class AttachmentService {
         private readonly configService: ConfigService
     ) { }
 
+    async getAttachmentById(id: number): Promise<Attachment> {
+        const attachment = this.attachmentRepository.findOne({ id: Number(id) })
+        if(attachment) return attachment;
+        throw new HttpException('This attachment does not exist', HttpStatus.NOT_FOUND)
+    }
+
     async createAttachment(fileBuffer: Buffer, transaction?: Transaction): Promise<Attachment> {
         try {
             const fileUuid = uuid()

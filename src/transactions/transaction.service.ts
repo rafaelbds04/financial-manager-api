@@ -8,6 +8,8 @@ import AttachmentService from '../attachments/attachment.service';
 import TransactionNotFoundException from './errorExecptions/transactionNotFound.exception';
 import Attachment from '../attachments/attachment.entity';
 import { UpdateTransactionDto } from './dto/updateTransaction.dto';
+import CategoryService from '../categories/category.service';
+import { PostgresErrorCode } from "src/database/PostgresErrorCode.enum";
 
 type TransactionTypeString = keyof typeof TransactionType
 
@@ -16,7 +18,8 @@ export default class TransactionService {
 
     constructor(
         @InjectRepository(Transaction) private transactionRepository: Repository<Transaction>,
-        private readonly attachmentService: AttachmentService
+        private readonly attachmentService: AttachmentService,
+        private readonly categoryService: CategoryService
     ) { }
 
     getAllTransactions(): Promise<Transaction[]> {
@@ -40,23 +43,48 @@ export default class TransactionService {
 
     async createTransaction(user: User, transactionData: CreateTransactionDto,
         files: Express.Multer.File[]): Promise<Transaction> {
-        const { receiptAttachment, ...transactionInputData } = transactionData;
+        const { receiptAttachment, category, ...transactionInputData } = transactionData;
+        
+        const categoryResult = await this.categoryService.getCategoryById(category);
+        if (!categoryResult) throw new HttpException('This category does not exist', HttpStatus.NOT_FOUND)
 
-        const newTransaction = this.transactionRepository.create({
-            ...transactionInputData,
-            author: user,
-        })
+        if(receiptAttachment) {
+            const receiptAttachmentResult = await this.attachmentService.getAttachmentById(receiptAttachment);
+            if (!receiptAttachmentResult) throw new HttpException('This receipt does not exist', HttpStatus.NOT_FOUND)
+        }
 
-        const createdTransaction = await this.transactionRepository.save(newTransaction);
+            try {
+                const newTransaction = this.transactionRepository.create({
+                    ...transactionInputData,
+                    category: categoryResult,
+                    author: user,
+                })
 
-        files.forEach(async (file: Express.Multer.File) => {
-            await this.attachmentService.createAttachment(file.buffer, createdTransaction)
-        })
+                const createdTransaction = await this.transactionRepository.save(newTransaction);
 
-        receiptAttachment ?
-            this.attachmentService.addAttachmentToTransaction(receiptAttachment, createdTransaction) : ''
+                files.forEach(async (file: Express.Multer.File) => {
+                    await this.attachmentService.createAttachment(file.buffer, createdTransaction)
+                })
 
-        return createdTransaction;
+                receiptAttachment && this.attachmentService
+                    .addAttachmentToTransaction(receiptAttachment, createdTransaction)
+
+                return createdTransaction;
+            } catch (error) {
+                console.log(error);
+                if (error?.code === PostgresErrorCode.UniqueViolation) {
+                    throw new HttpException('This transaction already exit',
+                        HttpStatus.BAD_REQUEST);
+                }
+                if (error?.code === PostgresErrorCode.ForeignKeyViolation) {
+                    throw new HttpException(error?.detail,
+                        HttpStatus.BAD_REQUEST);
+                }
+
+            }
+        throw new HttpException('Something with that wrong',
+            HttpStatus.INTERNAL_SERVER_ERROR);
+
     }
 
     async updateTransaction(transactionId: number, trabsactionData: UpdateTransactionDto): Promise<Transaction> {

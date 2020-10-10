@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, UseInterceptors, ClassSerializerInterceptor, Param, Query } from "@nestjs/common";
+import { Controller, Get, UseGuards, UseInterceptors, ClassSerializerInterceptor, Query } from "@nestjs/common";
 import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
 import { Receipt } from "./receipt.interface";
 import ReceiptService from "./receipt.service";
