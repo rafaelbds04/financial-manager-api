@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import Stats from './stats.entity';
 import TransactionService from '../transactions/transaction.service';
+import { Cron } from "@nestjs/schedule";
 
 
 @Injectable()
@@ -13,6 +14,7 @@ class StatsService {
         private readonly transactionService: TransactionService
     ) { }
 
+    @Cron('60 * * * * *')
     async updateStats(): Promise<any> {
         try {
             const revenue = await this.transactionService.getTotalByTypeOfThisMonth('REVENUE');
@@ -29,21 +31,28 @@ class StatsService {
             })
 
             const updated = await this.statsRepository.save(toUpdate);
+            console.log('Stats updated!')
             return updated;
 
         } catch (error) {
             console.log(error);
         }
     }
+    sleep(ms: number): any {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
 
     async getAllStats(): Promise<Stats> {
         try {
             const stats = await this.statsRepository.find();
+            await this.sleep(3000);
             return stats[0];
         } catch (error) {
             throw new HttpException('Something with that wrong', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
 }
 export default StatsService;

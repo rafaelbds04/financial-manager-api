@@ -11,6 +11,7 @@ import ReceiptModule from './receipt/receipt.module';
 import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
 import { join } from 'path';
 import StatsModule from './stats/stats.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -29,7 +30,7 @@ import StatsModule from './stats/stats.module';
     rootPath: join(__dirname, '..', '..', 'uploads'),
     serveRoot: '/uploads'
   }),
-
+  ScheduleModule.forRoot()
   ],
   controllers: [],
   providers: [],

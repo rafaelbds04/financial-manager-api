@@ -25,7 +25,7 @@ export default class TransactionService {
     getAllTransactions(): Promise<Transaction[]> {
         return this.transactionRepository.find({
             relations: ['category'],
-            select: ['id', 'name', 'amount', 'transactionType', 'transactionDate']
+            select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid']
         });
     }
 
