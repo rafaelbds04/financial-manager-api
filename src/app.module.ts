@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 import DatabaseModule from './database/database.module';
 import UserModule from './users/user.module';
@@ -9,7 +9,7 @@ import TransactionModule from './transactions/transaction.module';
 import AttachmentModule from './attachments/attachment.module';
 import ReceiptModule from './receipt/receipt.module';
 import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
-import { join } from 'path';
+import * as path from 'path';
 import StatsModule from './stats/stats.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -26,9 +26,13 @@ import { ScheduleModule } from '@nestjs/schedule';
     })
   }), DatabaseModule, UserModule, AuthenticationModule, CategoryModule,
     AttachmentModule, TransactionModule, ReceiptModule, StatsModule,
-  ServeStaticModule.forRoot({
-    rootPath: join(__dirname, '..', '..', 'uploads'),
-    serveRoot: '/uploads'
+  ServeStaticModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (configService: ConfigService) => ([{
+      rootPath: path.resolve(__dirname, '../', configService.get('UPLOADS_DEST')),
+      serveRoot: '/uploads'
+    }])
   }),
   ScheduleModule.forRoot()
   ],

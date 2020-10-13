@@ -38,14 +38,10 @@ class StatsService {
             console.log(error);
         }
     }
-    sleep(ms: number): any {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
-
+    
     async getAllStats(): Promise<Stats> {
         try {
             const stats = await this.statsRepository.find();
-            await this.sleep(3000);
             return stats[0];
         } catch (error) {
             throw new HttpException('Something with that wrong', HttpStatus.INTERNAL_SERVER_ERROR);

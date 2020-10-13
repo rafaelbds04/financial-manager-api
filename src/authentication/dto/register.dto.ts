@@ -15,6 +15,6 @@ export default class RegisterDto {
     @IsDefined()
     @IsString()
     @IsNotEmpty()
-    @MinLength(8)
+    @MinLength(4)
     password: string
 }
