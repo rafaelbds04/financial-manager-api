@@ -71,7 +71,7 @@ class ReceiptService {
     public async scrapingReceipt(url: string): Promise<SrapingReceipt> {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(url);
+        await page.goto(url, {waitUntil: 'networkidle2', timeout: 60000});
         await page.waitForFunction('document.getElementsByClassName("linhaShade")');
 
         if (!(await page.$('.avisoErro') == null)) {
