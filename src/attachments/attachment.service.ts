@@ -21,7 +21,7 @@ export default class AttachmentService {
 
     async getAttachmentById(id: number): Promise<Attachment> {
         const attachment = this.attachmentRepository.findOne({ id: Number(id) })
-        if(attachment) return attachment;
+        if (attachment) return attachment;
         throw new HttpException('This attachment does not exist', HttpStatus.NOT_FOUND)
     }
 
@@ -33,7 +33,8 @@ export default class AttachmentService {
 
             const newAttachment = this.attachmentRepository.create({
                 key: fileUuid,
-                transaction
+                url: this.configService.get('UPLOADS_URL_DEST') + fileUuid + '.jpg',
+                transaction,
             })
 
             const createdAttachment = this.attachmentRepository.save(newAttachment)
@@ -72,7 +73,7 @@ export default class AttachmentService {
     //Function to delete attachments of a transaction by id
     async deleteAttachmentById(id: number): Promise<any> {
         const attachmentoToDelete = await this.attachmentRepository.findOne(id)
-        
+
         if (!attachmentoToDelete) {
             throw new HttpException('Attachment not found', HttpStatus.NOT_FOUND);
         }

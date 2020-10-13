@@ -4,7 +4,6 @@ import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { imageFileFilter } from '../attachments/imageFileFilter';
 import TransactionService from "./transaction.service";
-import { Express } from 'express'
 import { CreateTransactionDto } from "./dto/createTransaction.dto";
 import FindOneParams from '../utils/findOneParams';
 import RequestWithUser from '../authentication/requestWithUser.interface';
