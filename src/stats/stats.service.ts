@@ -1,13 +1,15 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import Stats from './stats.entity';
 import TransactionService from '../transactions/transaction.service';
 import { Cron } from "@nestjs/schedule";
+import * as moment from "moment";
 
 
 @Injectable()
 class StatsService {
+    private readonly logger = new Logger(StatsService.name);
 
     constructor(
         @InjectRepository(Stats) private statsRepository: Repository<Stats>,
@@ -21,24 +23,24 @@ class StatsService {
             const expense = await this.transactionService.getTotalByTypeOfThisMonth('EXPENSE');
             const toDue = await this.transactionService.getTotalDue();
             const overDue = await this.transactionService.getTotalOverDue();
-            
+
             const toUpdate = this.statsRepository.create({
                 id: 1,
                 expense: expense | 0,
                 overDue: overDue | 0,
                 due: toDue | 0,
-                revenue: revenue| 0
+                revenue: revenue | 0
             })
 
             const updated = await this.statsRepository.save(toUpdate);
-            console.log('Stats updated!')
+            this.logger.log('Stats updated!', moment().utc().format())
             return updated;
 
         } catch (error) {
             console.log(error);
         }
     }
-    
+
     async getAllStats(): Promise<Stats> {
         try {
             const stats = await this.statsRepository.find();
