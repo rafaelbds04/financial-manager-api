@@ -1,0 +1,20 @@
+module.exports = {
+    apps: [{
+        name: 'finance-api',
+        script: './dist/main.js',
+        instances: 0,
+        exec_mode: 'cluster',
+        env: {
+            SERVER_PORT: 3000,
+            POSTGRES_HOST: '127.0.0.1',
+            POSTGRES_PORT: 5432,
+            POSTGRES_USER: '',
+            POSTGRES_PASSWORD: '',
+            POSTGRES_DB: '',
+            JWT_SECRET: '',
+            JWT_EXPIRES_TIME: 86400,
+            UPLOADS_DEST: '../uploads',
+            UPLOADS_URL_DEST: 'http://localhost/uploads/'
+        }
+    }]
+}

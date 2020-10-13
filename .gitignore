@@ -392,3 +392,6 @@ docker-compose.yml
 dist
 upload
 Database.md
+
+# npm2 config
+ecosystem.config.js
