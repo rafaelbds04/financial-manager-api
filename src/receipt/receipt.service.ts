@@ -48,7 +48,7 @@ class ReceiptService {
 
                 //Get next 2 index in the array, there is a date.
                 const unformattedDate = noteInformations[emissaoIndex + 1] + ' ' + noteInformations[emissaoIndex + 2]
-                const emittedDate = moment(unformattedDate, "DD/MM/YYYY hh:mm:ss").utcOffset(+180).toISOString();
+                const emittedDate = moment(unformattedDate, "DD/MM/YYYY hh:mm:ss").utcOffset(360).toISOString();
 
                 //Adding fiscal note do attachment
                 const screenshot = await this.attachmentService.createAttachment(scrapingResult.screenshot);
