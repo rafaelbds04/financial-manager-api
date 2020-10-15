@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as puppeteer from 'puppeteer'
 import AttachmentService from "src/attachments/attachment.service";
 import { Receipt } from "./receipt.interface";
@@ -48,7 +48,7 @@ class ReceiptService {
 
                 //Get next 2 index in the array, there is a date.
                 const unformattedDate = noteInformations[emissaoIndex + 1] + ' ' + noteInformations[emissaoIndex + 2]
-                const emittedDate = moment(unformattedDate, "DD/MM/YYYY hh:mm:ss").utcOffset(360).toISOString();
+                const emittedDate = moment(unformattedDate, "DD/MM/YYYY hh:mm:ss").tz('America/Sao_Paulo').toISOString();
 
                 //Adding fiscal note do attachment
                 const screenshot = await this.attachmentService.createAttachment(scrapingResult.screenshot);
