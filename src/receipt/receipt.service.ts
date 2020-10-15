@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import * as moment from 'moment';
 import * as puppeteer from 'puppeteer'
 import AttachmentService from "src/attachments/attachment.service";
@@ -10,12 +10,12 @@ interface SrapingReceipt {
     totalAmount?: number;
     generalInfos?: string;
     screenshot?: Buffer;
+    chave?: string,
 }
-
-
 
 @Injectable()
 class ReceiptService {
+    private readonly logger = new Logger(ReceiptService.name);
 
     constructor(
         private readonly attachmentService: AttachmentService
@@ -58,7 +58,8 @@ class ReceiptService {
                 return { ...scrapingResult, attachment: screenshot, emittedDate }
 
             } catch (error) {
-                console.log(error)
+                if (error?.name === 'TimeoutError') throw new HttpException('Erro tempo limite excedido', HttpStatus.REQUEST_TIMEOUT);
+                this.logger.error(error.message); 
                 throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
@@ -71,26 +72,30 @@ class ReceiptService {
     public async scrapingReceipt(url: string): Promise<SrapingReceipt> {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(url, {waitUntil: 'networkidle2', timeout: 60000});
-        await page.waitForFunction('document.getElementsByClassName("linhaShade")');
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36');
+        await page.goto(url, { timeout: 60000 });
+        await page.waitForSelector(".ui-page.ui-page-theme-a.ui-page-active");
 
         if (!(await page.$('.avisoErro') == null)) {
             const error = await page.$eval('.avisoErro', divs => (divs as HTMLElement).innerText)
             await browser.close();
             return { error }
-        } 
+        }
 
-        const screenshot = await page.screenshot({fullPage: true})
-
-        const emitter = await page.$eval('.txtTopo', div => (div as HTMLElement).innerText)
-        const amount = await page.$eval('.totalNumb.txtMax', div => (div as HTMLElement).innerText)
+        await page.$('.txtTopo')
+        const emitter = await page.$eval('.txtTopo', div => (div as HTMLElement).innerText.trim())
+        const amount = await page.$eval('.totalNumb.txtMax', div => (div as HTMLElement).innerText.trim())
         const generalInfos = await page.$eval(
-            '#infos > div:nth-child(1) > div > ul > li', div => (div as HTMLElement).innerText)
+            '#infos > div:nth-child(1) > div > ul > li', div => (div as HTMLElement).innerText.trim())
+        const chaveLine = await page.$eval('.chave', div => (div as HTMLElement).innerText.trim())
 
+        const chave = chaveLine.replace(/\D+/g, '');
         const totalAmount = Number(amount.replace(',', '.'))
 
+        const screenshot = await page.screenshot({ fullPage: true })
+
         await browser.close();
-        return { emitter, totalAmount, generalInfos, screenshot }
+        return { emitter, totalAmount, generalInfos, chave, screenshot }
     }
 
 
