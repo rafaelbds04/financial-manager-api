@@ -21,7 +21,7 @@ class ReceiptService {
         private readonly attachmentService: AttachmentService
     ) { }
 
-    async locateReceipt(receiptCode: string): Promise<Receipt> {
+    async locateReceipt(receiptCode: string): Promise<Receipt> { 
 
         if (receiptCode.includes('fazenda.rj.gov.br')) {
             try {
@@ -43,14 +43,14 @@ class ReceiptService {
                     throw new HttpException(scrapingResult.error, HttpStatus.INTERNAL_SERVER_ERROR)
                 }
 
-                const noteInformations = scrapingResult.generalInfos.split(' ');
+                const noteInformations = scrapingResult.generalInfos.split(' '); 
                 const emissaoIndex = noteInformations.indexOf('Emissão:')
 
                 //Get next 2 index in the array, there is a date.
                 const unformattedDate = noteInformations[emissaoIndex + 1] + ' ' + noteInformations[emissaoIndex + 2]
-                const emittedDate = moment(unformattedDate, "DD/MM/YYYY hh:mm:ss").tz('America/Sao_Paulo').toISOString();
+                const emittedDate = moment.tz(unformattedDate, "DD/MM/YYYY hh:mm:ss", 'America/Sao_Paulo').utc().toISOString(); 
 
-                //Adding fiscal note do attachment
+                //Adding fiscal note do attachment 
                 const screenshot = await this.attachmentService.createAttachment(scrapingResult.screenshot);
 
                 delete scrapingResult.screenshot;
