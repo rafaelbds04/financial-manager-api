@@ -45,43 +45,48 @@ export default class TransactionService {
         files: Express.Multer.File[]): Promise<Transaction> {
         const { receiptAttachment, category, ...transactionInputData } = transactionData;
         
-        const categoryResult = await this.categoryService.getCategoryById(category);
-        if (!categoryResult) throw new HttpException('This category does not exist', HttpStatus.NOT_FOUND)
-
-        if(receiptAttachment) {
-            const receiptAttachmentResult = await this.attachmentService.getAttachmentById(receiptAttachment);
-            if (!receiptAttachmentResult) throw new HttpException('This receipt does not exist', HttpStatus.NOT_FOUND)
+        if (transactionData.receiptKey) {
+            const existReicpt = await this.transactionRepository.count({ receiptKey: transactionData.receiptKey })
+            if(existReicpt) throw new HttpException('Uma transação com essa NF já existe', HttpStatus.BAD_REQUEST)
         }
 
-            try {
-                const newTransaction = this.transactionRepository.create({
-                    ...transactionInputData,
-                    category: categoryResult,
-                    author: user,
-                })
+        const categoryResult = await this.categoryService.getCategoryById(category);
+        if (!categoryResult) throw new HttpException('Essa categoria não existe', HttpStatus.NOT_FOUND)
 
-                const createdTransaction = await this.transactionRepository.save(newTransaction);
+        if (receiptAttachment) {
+            const receiptAttachmentResult = await this.attachmentService.getAttachmentById(receiptAttachment);
+            if (!receiptAttachmentResult) throw new HttpException('Esse anexo de NF não existe', HttpStatus.NOT_FOUND)
+        }
 
-                files.forEach(async (file: Express.Multer.File) => {
-                    await this.attachmentService.createAttachment(file.buffer, createdTransaction)
-                })
+        try {
+            const newTransaction = this.transactionRepository.create({
+                ...transactionInputData,
+                category: categoryResult,
+                author: user,
+            })
 
-                receiptAttachment && this.attachmentService
-                    .addAttachmentToTransaction(receiptAttachment, createdTransaction)
+            const createdTransaction = await this.transactionRepository.save(newTransaction);
 
-                return createdTransaction;
-            } catch (error) {
-                console.log(error);
-                if (error?.code === PostgresErrorCode.UniqueViolation) {
-                    throw new HttpException('This transaction already exit',
-                        HttpStatus.BAD_REQUEST);
-                }
-                if (error?.code === PostgresErrorCode.ForeignKeyViolation) {
-                    throw new HttpException(error?.detail,
-                        HttpStatus.BAD_REQUEST);
-                }
+            files.forEach(async (file: Express.Multer.File) => {
+                await this.attachmentService.createAttachment(file.buffer, createdTransaction)
+            })
 
+            receiptAttachment && this.attachmentService
+                .addAttachmentToTransaction(receiptAttachment, createdTransaction)
+
+            return createdTransaction;
+        } catch (error) {
+            console.log(error);
+            if (error?.code === PostgresErrorCode.UniqueViolation) {
+                throw new HttpException('This transaction already exit',
+                    HttpStatus.BAD_REQUEST);
             }
+            if (error?.code === PostgresErrorCode.ForeignKeyViolation) {
+                throw new HttpException(error?.detail,
+                    HttpStatus.BAD_REQUEST);
+            }
+
+        }
         throw new HttpException('Something with that wrong',
             HttpStatus.INTERNAL_SERVER_ERROR);
 

@@ -40,4 +40,7 @@ export class CreateTransactionDto {
 
     @IsOptional()
     public receiptAttachment?: number
+
+    @IsOptional()
+    public receiptKey?: string
 }

@@ -10,7 +10,7 @@ interface SrapingReceipt {
     totalAmount?: number;
     generalInfos?: string;
     screenshot?: Buffer;
-    chave?: string,
+    receiptKey?: string,
 }
 
 @Injectable()
@@ -52,7 +52,7 @@ class ReceiptService {
 
                 //Adding fiscal note do attachment 
                 const screenshot = await this.attachmentService.createAttachment(scrapingResult.screenshot);
-
+ 
                 delete scrapingResult.screenshot;
                 delete scrapingResult.generalInfos;
                 return { ...scrapingResult, attachment: screenshot, emittedDate }
@@ -87,15 +87,15 @@ class ReceiptService {
         const amount = await page.$eval('.totalNumb.txtMax', div => (div as HTMLElement).innerText.trim())
         const generalInfos = await page.$eval(
             '#infos > div:nth-child(1) > div > ul > li', div => (div as HTMLElement).innerText.trim())
-        const chaveLine = await page.$eval('.chave', div => (div as HTMLElement).innerText.trim())
+        const keyLine = await page.$eval('.chave', div => (div as HTMLElement).innerText.trim())
 
-        const chave = chaveLine.replace(/\D+/g, '');
+        const receiptKey = keyLine.replace(/\D+/g, '');
         const totalAmount = Number(amount.replace(',', '.'))
 
         const screenshot = await page.screenshot({ fullPage: true })
 
         await browser.close();
-        return { emitter, totalAmount, generalInfos, chave, screenshot }
+        return { emitter, totalAmount, generalInfos, receiptKey, screenshot }
     }
 
 
