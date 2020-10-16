@@ -17,6 +17,12 @@ class Attachment {
 
     @ManyToOne(() => Transaction, (transaction: Transaction) => transaction.id, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
     public transaction?: Transaction
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    public createdAt: Date
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    public updatedAt: Date
 }
 
 export default Attachment;

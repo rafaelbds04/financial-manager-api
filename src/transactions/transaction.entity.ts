@@ -32,7 +32,7 @@ class Transaction {
     })
     public transactionType: TransactionType
 
-    @Column({ 
+    @Column({
         type: 'decimal'
     })
     public amount: number
@@ -40,11 +40,14 @@ class Transaction {
     @Column({ type: 'timestamp' })
     public transactionDate: Date
 
-    @Column({ type: 'timestamp', nullable: true})
+    @Column({ type: 'timestamp', nullable: true })
     public dueDate?: Date
 
     @Column({ type: 'boolean' })
     public paid: boolean
+
+    @Column({ nullable: true, unique: true })
+    public receiptKey?: string
 
     @ManyToOne(() => Category, (category: Category) => category.id)
     @JoinColumn()
@@ -52,6 +55,12 @@ class Transaction {
 
     @OneToMany(() => Attachment, (attachment: Attachment) => attachment.transaction)
     public attachments?: Attachment[]
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    public createdAt: Date
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    public updatedAt: Date
 }
 
 export default Transaction;
