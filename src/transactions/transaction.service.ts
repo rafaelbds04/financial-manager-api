@@ -31,7 +31,8 @@ export default class TransactionService {
             relations: ['category'],
             select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid'],
             take,
-            skip
+            skip,
+            order: { transactionDate: 'DESC' }
         });
     }
 
