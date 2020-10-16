@@ -10,6 +10,7 @@ import Attachment from '../attachments/attachment.entity';
 import { UpdateTransactionDto } from './dto/updateTransaction.dto';
 import CategoryService from '../categories/category.service';
 import { PostgresErrorCode } from "src/database/PostgresErrorCode.enum";
+import FindAllTransactionParams from './findAllTransactionParams';
 
 type TransactionTypeString = keyof typeof TransactionType
 
@@ -20,12 +21,17 @@ export default class TransactionService {
         @InjectRepository(Transaction) private transactionRepository: Repository<Transaction>,
         private readonly attachmentService: AttachmentService,
         private readonly categoryService: CategoryService
-    ) { }
+    ) { } 
 
-    getAllTransactions(): Promise<Transaction[]> {
+    getAllTransactions(params: FindAllTransactionParams): Promise<Transaction[]> {
+        const take = params.take || 10
+        const skip = params.skip || 0
+
         return this.transactionRepository.find({
             relations: ['category'],
-            select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid']
+            select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid'],
+            take,
+            skip
         });
     }
 
@@ -44,7 +50,7 @@ export default class TransactionService {
     async createTransaction(user: User, transactionData: CreateTransactionDto,
         files: Express.Multer.File[]): Promise<Transaction> {
         const { receiptAttachment, category, ...transactionInputData } = transactionData;
-        
+
         if (transactionData.receiptKey) {
             const existReicpt = await this.transactionRepository.count({ receiptKey: transactionData.receiptKey })
             if(existReicpt) throw new HttpException('Uma transação com essa NF já existe', HttpStatus.BAD_REQUEST)

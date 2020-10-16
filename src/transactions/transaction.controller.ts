@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Controller, Post, UseGuards, UploadedFiles, UseInterceptors, ClassSerializerInterceptor, Get, Body, Req, Param, Delete, Patch } from "@nestjs/common";
+import { Controller, Post, UseGuards, UploadedFiles, UseInterceptors, ClassSerializerInterceptor, Get, Body, Req, Param, Delete, Patch, Query } from "@nestjs/common";
 import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { imageFileFilter } from '../attachments/imageFileFilter';
@@ -9,6 +9,7 @@ import FindOneParams from '../utils/findOneParams';
 import RequestWithUser from '../authentication/requestWithUser.interface';
 import { UpdateTransactionDto } from './dto/updateTransaction.dto';
 import Transaction from "./transaction.entity";
+import FindAllTransactionParams from "./findAllTransactionParams";
 
 @Controller('transactions')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -18,8 +19,8 @@ export default class TransactionController {
 
     @Get()
     @UseGuards(JwtAuthenticationGuard)
-    async getAllTransactions() {
-        return this.transactionService.getAllTransactions();
+    async getAllTransactions(@Query() params: FindAllTransactionParams ) {
+        return this.transactionService.getAllTransactions(params);
     }
 
     @Get(':id')
