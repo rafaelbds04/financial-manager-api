@@ -4,7 +4,6 @@ import { Repository } from "typeorm";
 import Stats from './stats.entity';
 import TransactionService from '../transactions/transaction.service';
 import { Cron } from "@nestjs/schedule";
-import * as moment from "moment";
 
 
 @Injectable()
@@ -33,7 +32,7 @@ class StatsService {
             })
 
             const updated = await this.statsRepository.save(toUpdate);
-            this.logger.log('Stats updated!', moment().utc().format())
+            this.logger.log('Stats updated!')
             return updated;
 
         } catch (error) {
