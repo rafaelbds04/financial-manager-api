@@ -22,7 +22,7 @@ export default class TransactionService {
         @InjectRepository(Transaction) private transactionRepository: Repository<Transaction>,
         private readonly attachmentService: AttachmentService,
         private readonly categoryService: CategoryService
-    ) { } 
+    ) { }
 
     getAllTransactions(params: FindAllTransactionParams): Promise<Transaction[]> {
         const take = params.take || 10
@@ -55,7 +55,7 @@ export default class TransactionService {
 
         if (transactionData.receiptKey) {
             const existReicpt = await this.transactionRepository.count({ receiptKey: transactionData.receiptKey })
-            if(existReicpt) throw new HttpException('Uma transação com essa NF já existe', HttpStatus.BAD_REQUEST)
+            if (existReicpt) throw new HttpException('Uma transação com essa NF já existe', HttpStatus.BAD_REQUEST)
         }
 
         const categoryResult = await this.categoryService.getCategoryById(category);
