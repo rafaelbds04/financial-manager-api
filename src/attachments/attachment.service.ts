@@ -48,7 +48,6 @@ export default class AttachmentService {
 
     //Function to delete attachments of a transaction by key
     async deleteAttachmentByKey(key: string): Promise<any> {
-
         try {
             const deletedAttachment = await this.attachmentRepository.delete({ key: key })
 
@@ -58,12 +57,9 @@ export default class AttachmentService {
             //Deleting storaged file.
             fs.unlinkSync(path.resolve(__dirname, '../../', this.configService.get('UPLOADS_DEST'), key + '.jpg'))
 
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (error) {
             throw new HttpException(error?.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
     }
 
     async addAttachmentToTransaction(attachmentId: number, transaction: Transaction): Promise<Attachment> {

@@ -123,10 +123,11 @@ export default class TransactionService {
             //Deleting attachments from this transaction
             transactionToDelete.attachments.forEach(
                 async (attachment: Attachment) => await this.attachmentService.deleteAttachmentByKey(attachment.key)
-                    .catch((error) => { this.logger.error(error); throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR) }))
+                    .catch(() => { throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR) }))
 
         } catch (error) {
             if (error?.status === 404) throw new TransactionNotFoundException(transactionId);
+            this.logger.error(error);
             throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
