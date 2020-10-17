@@ -1,6 +1,5 @@
-import { IsDefined, IsString, IsOptional, IsNotEmpty, IsEnum, IsDecimal, IsDateString } from "class-validator"
+import { IsDefined, IsString, IsOptional, IsNotEmpty, IsEnum, IsDecimal, IsDateString, IsNumber } from "class-validator"
 import { TransactionType } from '../transaction.entity';
-import Category from "src/categories/category.entity";
 
 export class UpdateTransactionDto {
 
@@ -36,8 +35,8 @@ export class UpdateTransactionDto {
     public paid: boolean
 
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     @IsOptional()
-    public category: Category
+    public category: number
 
 }
