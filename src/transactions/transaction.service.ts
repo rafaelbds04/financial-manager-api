@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import Transaction, { TransactionType } from './transaction.entity';
 import { Repository } from 'typeorm';
@@ -16,6 +16,7 @@ type TransactionTypeString = keyof typeof TransactionType
 
 @Injectable()
 export default class TransactionService {
+    private readonly logger = new Logger(TransactionService.name);
 
     constructor(
         @InjectRepository(Transaction) private transactionRepository: Repository<Transaction>,
@@ -122,7 +123,7 @@ export default class TransactionService {
             //Deleting attachments from this transaction
             transactionToDelete.attachments.forEach(
                 async (attachment: Attachment) => await this.attachmentService.deleteAttachmentByKey(attachment.key)
-                    .catch(() => { throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR) }))
+                    .catch((error) => { this.logger.error(error); throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR) }))
 
         } catch (error) {
             if (error?.status === 404) throw new TransactionNotFoundException(transactionId);
