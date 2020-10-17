@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors, ClassSerializerInterceptor, Body, Post, HttpCode, UseGuards, Req, Get, Delete } from "@nestjs/common";
+import { Controller, UseInterceptors, ClassSerializerInterceptor, Body, Post, HttpCode, UseGuards, Req, Get } from "@nestjs/common";
 import AuthenticationService from './authentication.service';
 import RegisterDto from './dto/register.dto';
 import User from '../users/user.entity';
@@ -25,7 +25,7 @@ class AuthenticationController {
     async logIn(@Req() request: RequestWithUser): Promise<User> {
         const { user } = request;
         const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-        request.res.setHeader('Set-Hedaer', cookie)
+        request.res.setHeader('Set-Header', cookie)
         return user;
     }
 
