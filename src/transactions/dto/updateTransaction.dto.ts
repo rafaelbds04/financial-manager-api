@@ -1,4 +1,5 @@
 import { IsDefined, IsString, IsOptional, IsNotEmpty, IsEnum, IsDecimal, IsDateString, IsNumber } from "class-validator"
+import Category from '../../categories/category.entity';
 import { TransactionType } from '../transaction.entity';
 
 export class UpdateTransactionDto {
@@ -37,6 +38,6 @@ export class UpdateTransactionDto {
     @IsNotEmpty()
     @IsNumber()
     @IsOptional()
-    public category: number
+    public category: Category
 
 }
