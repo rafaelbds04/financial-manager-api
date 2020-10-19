@@ -19,8 +19,11 @@ export default class TransactionController {
 
     @Get()
     @UseGuards(JwtAuthenticationGuard)
-    async getAllTransactions(@Query() params: FindAllTransactionParams ) {
-        return this.transactionService.getAllTransactions(params);
+    async getAllTransactions(@Query() params: FindAllTransactionParams,
+        @Req() request: RequestWithUser) {
+        const { results, count } = await this.transactionService.getAllTransactions(params);
+        request.res.setHeader('X-total-count', count);
+        return results
     }
 
     @Get(':id')

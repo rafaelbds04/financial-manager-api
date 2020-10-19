@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import Transaction, { TransactionType } from './transaction.entity';
-import { Repository } from 'typeorm';
+import { Between, FindConditions, Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/createTransaction.dto';
 import User from '../users/user.entity';
 import AttachmentService from '../attachments/attachment.service';
@@ -11,6 +11,7 @@ import { UpdateTransactionDto } from './dto/updateTransaction.dto';
 import CategoryService from '../categories/category.service';
 import { PostgresErrorCode } from "src/database/PostgresErrorCode.enum";
 import FindAllTransactionParams from './findAllTransactionParams';
+import * as moment from "moment";
 
 type TransactionTypeString = keyof typeof TransactionType
 
@@ -24,17 +25,31 @@ export default class TransactionService {
         private readonly categoryService: CategoryService
     ) { }
 
-    getAllTransactions(params: FindAllTransactionParams): Promise<Transaction[]> {
+    async getAllTransactions(params: FindAllTransactionParams): Promise<{ results: Transaction[], count: number }> {
+        const from = params.from || moment().subtract(30, 'days').format();
+        const to = params.to || moment().format();
         const take = params.take || 10
         const skip = params.skip || 0
+        const transactionType = params.transactionType || undefined
 
-        return this.transactionRepository.find({
+        //Where conditionals, 
+        //transactionType is an enum if the value is undefined does not where and specific type
+        const where: FindConditions<Transaction> = {
+            transactionDate: Between(from, to),
+            transactionType: transactionType
+        }
+        !transactionType && delete where.transactionType
+
+        const [results, count] = await this.transactionRepository.findAndCount({
             relations: ['category'],
             select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid'],
             take,
             skip,
-            order: { transactionDate: 'DESC' }
+            order: { transactionDate: 'DESC' },
+            where
         });
+
+        return { results, count }
     }
 
     async getTransactionById(id: number): Promise<Transaction> {
@@ -100,8 +115,8 @@ export default class TransactionService {
 
     }
 
-    async updateTransaction(transactionId: number, trabsactionData: UpdateTransactionDto): Promise<Transaction> {
-        await this.transactionRepository.update({ id: transactionId }, trabsactionData)
+    async updateTransaction(transactionId: number, transactionData: UpdateTransactionDto): Promise<Transaction> {
+        await this.transactionRepository.update({ id: transactionId }, transactionData)
         const updatedTransaction = await this.transactionRepository.findOne(transactionId);
         if (updatedTransaction) {
             return updatedTransaction;

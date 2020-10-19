@@ -12,7 +12,6 @@ export default class FindAllTransactionParams {
 
     @IsOptional()
     @IsNumber()
-    @Max(200)
     @Type(() => Number)
     skip?: number
 
