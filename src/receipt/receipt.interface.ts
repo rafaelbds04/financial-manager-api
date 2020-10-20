@@ -5,5 +5,6 @@ export interface Receipt {
     totalAmount?: number
     emittedDate?: string
     error?: string,
-    attachment?: Attachment
+    attachment?: Attachment,
+    receiptKey?: string,
 }
