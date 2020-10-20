@@ -40,4 +40,10 @@ export class UpdateTransactionDto {
     @IsOptional()
     public category: Category
 
+    @IsOptional()
+    public receiptAttachment?: number
+
+    @IsOptional()
+    public receiptKey?: string
+
 }

@@ -1,8 +1,9 @@
 import { Type } from "class-transformer";
-import { IsDateString, IsEnum, IsOptional, IsNumber, Max } from "class-validator";
+import { IsDateString, IsEnum, IsOptional, IsNumber, Max, IsNumberString } from "class-validator";
+import Category from "src/categories/category.entity";
 import { TransactionType } from "./transaction.entity";
 
-export default class FindAllTransactionParams {
+class FindAllTransactionParams {
 
     @IsOptional()
     @IsNumber()
@@ -27,6 +28,16 @@ export default class FindAllTransactionParams {
     to?: Date
 
     @IsOptional()
+    public paid: boolean
+
+    @IsOptional()
     @IsEnum(TransactionType)
     public transactionType?: TransactionType
+
+    @IsOptional()
+    @IsNumberString()
+    public category: Category
+    
 }
+
+export default FindAllTransactionParams

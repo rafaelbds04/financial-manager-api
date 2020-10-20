@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import Transaction, { TransactionType } from './transaction.entity';
-import { Between, FindConditions, Repository } from 'typeorm';
+import { Between, FindConditions, Raw, Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/createTransaction.dto';
 import User from '../users/user.entity';
 import AttachmentService from '../attachments/attachment.service';
@@ -26,25 +26,23 @@ export default class TransactionService {
     ) { }
 
     async getAllTransactions(params: FindAllTransactionParams): Promise<{ results: Transaction[], count: number }> {
-        const from = params.from || moment().subtract(30, 'days').format();
-        const to = params.to || moment().format();
-        const take = params.take || 10
-        const skip = params.skip || 0
-        const transactionType = params.transactionType || undefined
+        const { take, skip, from, to, name, ...lastparams } = params
+        const fromDate = from || moment().subtract(30, 'days').format();
+        const toDate = to || moment().format();
 
-        //Where conditionals, 
-        //transactionType is an enum if the value is undefined does not where and specific type
+        //Where conditionals
         const where: FindConditions<Transaction> = {
-            transactionDate: Between(from, to),
-            transactionType: transactionType
+            transactionDate: Between(fromDate, toDate),
+            name: Raw(alias => `${alias} ILIKE '%${name}%'`),
+            ...lastparams
         }
-        !transactionType && delete where.transactionType
+        !name && delete where.name
 
         const [results, count] = await this.transactionRepository.findAndCount({
             relations: ['category'],
             select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid'],
-            take,
-            skip,
+            take: take || 10,
+            skip: skip || 0,
             order: { transactionDate: 'DESC' },
             where
         });
