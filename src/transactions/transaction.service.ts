@@ -97,7 +97,7 @@ export default class TransactionService {
 
             return createdTransaction;
         } catch (error) {
-            console.log(error);
+            this.logger.error(error);
             if (error?.code === PostgresErrorCode.UniqueViolation) {
                 throw new HttpException('This transaction already exit',
                     HttpStatus.BAD_REQUEST);
@@ -155,7 +155,7 @@ export default class TransactionService {
                 .getRawOne();
             return data.total;
         } catch (error) {
-            console.log(error)
+            this.logger.error(error);
         }
     }
 

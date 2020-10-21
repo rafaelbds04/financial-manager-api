@@ -43,6 +43,9 @@ class Transaction {
     @Column({ type: 'timestamp', nullable: true })
     public dueDate?: Date
 
+    @Column({ type: 'timestamp', nullable: true })
+    public paidDate?: Date
+
     @Column({ type: 'boolean' })
     public paid: boolean
 
