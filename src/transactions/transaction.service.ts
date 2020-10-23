@@ -41,7 +41,7 @@ export default class TransactionService {
         const [results, count] = await this.transactionRepository.findAndCount({
             relations: ['category'],
             select: ['id', 'name', 'amount', 'transactionType', 'transactionDate', 'dueDate', 'paid'],
-            take: take || 10,
+            take: take || 15,
             skip: skip || 0,
             order: { transactionDate: 'DESC' },
             where
