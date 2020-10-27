@@ -8,9 +8,10 @@ interface SrapingReceipt {
     error?: string;
     emitter?: string;
     totalAmount?: number;
-    generalInfos?: string;
+    emittedDate?: string;
     screenshot?: Buffer;
     receiptKey?: string,
+    cnpj?: string
 }
 
 @Injectable()
@@ -24,50 +25,37 @@ class ReceiptService {
     async locateReceipt(receiptCode: string): Promise<Receipt> {
         if (receiptCode.includes('fazenda.rj.gov.br')) {
             try {
-                //Get NFc-e qr code params 
-                const params = receiptCode.split('p=')[1].split('|')
-                //Check if is emitted offiline/contigency from url receipt params 
-                const emittedOffline = params.length > 5 ? true : false
-                //Fetch receipt informations using web scraping
-                const scrapingResult = await this.scrapingReceipt(
-                    new URL('http://www4.fazenda.rj.gov.br/consultaNFCe/QRCode?p=' +
-                        receiptCode.split('p=')[1]).toString());
+                const url = new URL(receiptCode);
+                const params = url.searchParams.get('p') && url.searchParams.get('p').split('|');
+                const emittedOffline = ((params && params.length > 5) || url.searchParams.get('vNF')) ? true : false
+
+                const scrapingResult = await this.scrapingReceipt(url.toString());
 
                 if (scrapingResult.error) {
                     if (emittedOffline) {
                         return {
-                            receiptKey: params[0],
-                            totalAmount: Number(params[4]),
+                            receiptKey: url.searchParams.get('chNFe') || params[0],
+                            totalAmount: Number(url.searchParams.get('vNF')) || Number(params[4]),
                             error: scrapingResult.error
                         }
                     }
                     throw new HttpException(scrapingResult.error, HttpStatus.INTERNAL_SERVER_ERROR)
                 }
 
-                const noteInformations = scrapingResult.generalInfos.split(' ');
-                const emissaoIndex = noteInformations.indexOf('Emissão:')
-
-                //Get next 2 index in the array, there is a date.
-                const unformattedDate = noteInformations[emissaoIndex + 1] + ' ' + noteInformations[emissaoIndex + 2]
-                const emittedDate = moment.tz(unformattedDate, "DD/MM/YYYY hh:mm:ss", 'America/Sao_Paulo').utc().toISOString();
+                const { screenshot, ...latScrapingResult } = scrapingResult
 
                 //Adding fiscal note do attachment 
-                const screenshot = await this.attachmentService.createAttachment(scrapingResult.screenshot);
-
-                delete scrapingResult.screenshot;
-                delete scrapingResult.generalInfos;
-                return { ...scrapingResult, attachment: screenshot, emittedDate }
+                const attachment = await this.attachmentService.createAttachment(screenshot);
+                return { ...latScrapingResult, attachment }
 
             } catch (error) {
                 if (error?.name === 'TimeoutError') throw new HttpException('Erro tempo limite excedido', HttpStatus.REQUEST_TIMEOUT);
-                this.logger.error((typeof error == 'object' ? JSON.stringify(error) : error.message));
+                this.logger.error((typeof error == 'object' ? JSON.stringify(error.message) : error.message));
                 throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
             throw new HttpException('Wrong code provided', HttpStatus.BAD_REQUEST)
         }
-
-
     }
 
     public async scrapingReceipt(url: string): Promise<SrapingReceipt> {
@@ -88,17 +76,21 @@ class ReceiptService {
         const amount = await page.$eval('.totalNumb.txtMax', div => (div as HTMLElement).innerText.trim())
         const generalInfos = await page.$eval(
             '#infos > div:nth-child(1) > div > ul > li', div => (div as HTMLElement).innerText.trim())
-        const keyLine = await page.$eval('.chave', div => (div as HTMLElement).innerText.trim())
-
-        const receiptKey = keyLine.replace(/\D+/g, '');
-        const totalAmount = Number(amount.replace(',', '.'))
-
+        const receiptKey = await page.$eval('.chave', div => (div as HTMLElement).innerText.trim().replace(/\D+/g, ''))
+        const cnpj = await page.$eval('#conteudo > div.txtCenter > div:nth-child(2)', div => (div as HTMLElement).innerText.trim().replace(/\D/g, ''))
         const screenshot = await page.screenshot({ fullPage: true })
-
         await browser.close();
-        return { emitter, totalAmount, generalInfos, receiptKey, screenshot }
-    }
 
+        const totalAmount = Number(amount.replace(',', '.'))
+        const noteInformations = generalInfos.split(' ');
+        const emissaoIndex = noteInformations.indexOf('Emissão:')
+
+        //Get next 2 index in the array, there is a date.
+        const unformattedDate = noteInformations[emissaoIndex + 1] + ' ' + noteInformations[emissaoIndex + 2]
+        const emittedDate = moment.tz(unformattedDate, "DD/MM/YYYY hh:mm:ss", 'America/Sao_Paulo').utc().toISOString();
+
+        return { emitter, totalAmount, emittedDate, receiptKey, cnpj, screenshot }
+    }
 
 }
 export default ReceiptService;
