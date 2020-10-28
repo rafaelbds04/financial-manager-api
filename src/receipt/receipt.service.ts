@@ -25,7 +25,7 @@ class ReceiptService {
     async locateReceipt(receiptCode: string): Promise<Receipt> {
         if (receiptCode.includes('fazenda.rj.gov.br')) {
             try {
-                const url = new URL(receiptCode);
+                const url = new URL(receiptCode.replace(' ', ''));
                 const params = url.searchParams.get('p') && url.searchParams.get('p').split('|');
                 const emittedOffline = ((params && params.length > 5) || url.searchParams.get('vNF')) ? true : false
 
