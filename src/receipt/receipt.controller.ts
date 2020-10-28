@@ -15,7 +15,9 @@ class CategoryController {
     @Get('/catch')
     @UseGuards(JwtAuthenticationGuard)
     async getAllCategories(@Query() { code }: { code: string }): Promise<Receipt> {
-        return this.receiptService.locateReceipt(code)
+        //Replacing all unexpected character
+        const formatedCode = code.replace(/[\u{0080}-\u{FFFF}]/gu, '');
+        return await this.receiptService.locateReceipt(formatedCode)
     }
 
 
