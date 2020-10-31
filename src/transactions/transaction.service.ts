@@ -27,7 +27,7 @@ export default class TransactionService {
 
     async getAllTransactions(params: FindAllTransactionParams): Promise<{ results: Transaction[], count: number }> {
         const { take, skip, from, to, name, ...lastparams } = params
-        const fromDate = from || moment().subtract(30, 'days').format();
+        const fromDate = from || moment().subtract(90, 'days').format();
         const toDate = to || moment().format();
 
         //Where conditionals

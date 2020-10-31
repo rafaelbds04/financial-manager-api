@@ -1,7 +1,6 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import Transaction from '../transactions/transaction.entity';
 
-
 @Entity()
 class Attachment {
     @PrimaryGeneratedColumn()

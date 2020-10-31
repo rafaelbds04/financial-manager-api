@@ -1,13 +1,15 @@
 import { Injectable, HttpStatus, HttpException } from "@nestjs/common";
 import Attachment from './attachment.entity';
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Between, FindConditions, Repository } from "typeorm";
 import * as sharp from 'sharp';
 import * as path from "path";
 import { v4 as uuid } from 'uuid';
 import Transaction from "src/transactions/transaction.entity";
 import { ConfigService } from "@nestjs/config";
 import * as fs from "fs";
+import FindParams from '../utils/findParams';
+import * as moment from "moment";
 
 
 @Injectable()
@@ -18,6 +20,28 @@ export default class AttachmentService {
         private attachmentRepository: Repository<Attachment>,
         private readonly configService: ConfigService
     ) { }
+
+    async getAllAttachments(params: FindParams): Promise<{ results: Attachment[], count: number }> {
+        const { take, skip, from, to, ...lastparams } = params
+        const fromDate = from || moment().subtract(90, 'days').format();
+        const toDate = to || moment().format();
+
+        //Where conditionals
+        const where: FindConditions<Attachment> = {
+            createdAt: Between(fromDate, toDate),
+            ...lastparams
+        }
+
+        const [results, count] = await this.attachmentRepository.findAndCount({
+            take: take || 15,
+            skip: skip || 0,
+            order: { createdAt: 'DESC' },
+            relations: ['transaction'],
+            where,
+        });
+
+        return { results, count }
+    }
 
     async getAttachmentById(id: number): Promise<Attachment> {
         const attachment = this.attachmentRepository.findOne({ id: Number(id) })
