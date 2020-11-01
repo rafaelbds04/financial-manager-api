@@ -1,4 +1,7 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+    Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn,
+    UpdateDateColumn
+} from "typeorm";
 import Transaction from '../transactions/transaction.entity';
 
 @Entity()
@@ -10,17 +13,17 @@ class Attachment {
         nullable: true
     })
     public url?: string
- 
+
     @Column()
     public key: string
 
     @ManyToOne(() => Transaction, (transaction: Transaction) => transaction.id, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
     public transaction?: Transaction
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({ type: 'timestamp' })
     public createdAt: Date
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn({ type: 'timestamp' })
     public updatedAt: Date
 }
 

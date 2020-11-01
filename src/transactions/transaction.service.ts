@@ -114,7 +114,7 @@ export default class TransactionService {
     }
 
     async updateTransaction(transactionId: number, transactionData: UpdateTransactionDto): Promise<Transaction> {
-        await this.transactionRepository.update({ id: transactionId }, { ...transactionData, updatedAt: moment().toISOString() })
+        await this.transactionRepository.update({ id: transactionId }, transactionData)
         const updatedTransaction = await this.transactionRepository.findOne(transactionId);
         if (updatedTransaction) {
             return updatedTransaction;

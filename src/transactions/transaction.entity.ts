@@ -1,4 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOne } from "typeorm";
+import {
+    Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOne,
+    CreateDateColumn, UpdateDateColumn
+} from "typeorm";
 import User from '../users/user.entity';
 import Category from '../categories/category.entity';
 import Attachment from '../attachments/attachment.entity';
@@ -59,10 +62,10 @@ class Transaction {
     @OneToMany(() => Attachment, (attachment: Attachment) => attachment.transaction)
     public attachments?: Attachment[]
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({ type: 'timestamp' })
     public createdAt: Date
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn({ type: 'timestamp' })
     public updatedAt: Date
 }
 
