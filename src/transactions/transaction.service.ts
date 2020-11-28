@@ -32,7 +32,6 @@ export default class TransactionService {
         const dueStart = dueStartDate || moment().subtract(90, 'days').format();
         const dueEnd = dueEndDate || moment().add(90, 'days').format();
 
-        console.log(dueStartDate);
         //Where conditionals
         const where: FindConditions<Transaction> = {
             transactionDate: Between(fromDate, toDate),
@@ -40,7 +39,7 @@ export default class TransactionService {
             name: Raw(alias => `${alias} ILIKE '%${name}%'`),
             ...lastparams
         }
-        !dueStartDate || !dueEndDate && delete where.dueDate
+        if(!dueStartDate || !dueEndDate) delete where.dueDate
         !name && delete where.name
 
         const [results, count] = await this.transactionRepository.findAndCount({
