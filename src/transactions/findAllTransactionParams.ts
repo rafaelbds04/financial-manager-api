@@ -28,6 +28,14 @@ class FindAllTransactionParams {
     to?: Date
 
     @IsOptional()
+    @IsDateString()
+    dueStartDate?: Date
+
+    @IsOptional()
+    @IsDateString()
+    dueEndDate?: Date
+
+    @IsOptional()
     public paid: boolean
 
     @IsOptional()

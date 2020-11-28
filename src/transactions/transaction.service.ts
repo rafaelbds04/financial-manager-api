@@ -26,16 +26,21 @@ export default class TransactionService {
     ) { }
 
     async getAllTransactions(params: FindAllTransactionParams): Promise<{ results: Transaction[], count: number }> {
-        const { take, skip, from, to, name, ...lastparams } = params
+        const { take, skip, from, to, name, dueStartDate, dueEndDate, ...lastparams } = params
         const fromDate = from || moment().subtract(90, 'days').format();
         const toDate = to || moment().format();
+        const dueStart = dueStartDate || moment().subtract(90, 'days').format();
+        const dueEnd = dueEndDate || moment().add(90, 'days').format();
 
+        console.log(dueStartDate);
         //Where conditionals
         const where: FindConditions<Transaction> = {
             transactionDate: Between(fromDate, toDate),
+            dueDate: Between(dueStart, dueEnd),
             name: Raw(alias => `${alias} ILIKE '%${name}%'`),
             ...lastparams
         }
+        !dueStartDate || !dueEndDate && delete where.dueDate
         !name && delete where.name
 
         const [results, count] = await this.transactionRepository.findAndCount({
