@@ -37,7 +37,7 @@ export default class AttachmentService {
         }
 
         const [results, count] = await this.attachmentRepository.findAndCount({
-            take: take || 15,
+            take: take || 20,
             skip: skip || 0,
             order: { createdAt: 'DESC' },
             relations: ['transaction'],
