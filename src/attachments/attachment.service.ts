@@ -32,6 +32,10 @@ export default class AttachmentService {
             ...lastparams
         }
 
+        if (!from && !to) {
+            delete where.createdAt;
+        }
+
         const [results, count] = await this.attachmentRepository.findAndCount({
             take: take || 15,
             skip: skip || 0,
@@ -63,6 +67,26 @@ export default class AttachmentService {
 
             const createdAttachment = this.attachmentRepository.save(newAttachment)
 
+            return createdAttachment;
+        } catch (error) {
+            console.log(error);
+            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async createPdfAttachment(fileBuffer: Buffer, transaction?: Transaction): Promise<Attachment> {
+        try {
+            const fileUuid = uuid()
+            const pdfPath = path.resolve(__dirname, '../../', this.configService.get('UPLOADS_DEST'), fileUuid + '.pdf')
+            fs.writeFileSync(pdfPath, fileBuffer);
+
+            const newAttachment = this.attachmentRepository.create({
+                key: fileUuid,
+                url: this.configService.get('UPLOADS_URL_DEST') + fileUuid + '.pdf',
+                transaction,
+            })
+
+            const createdAttachment = this.attachmentRepository.save(newAttachment)
             return createdAttachment;
         } catch (error) {
             console.log(error);

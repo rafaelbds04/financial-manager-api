@@ -93,6 +93,10 @@ export default class TransactionService {
             const createdTransaction = await this.transactionRepository.save(newTransaction);
 
             files.forEach(async (file: Express.Multer.File) => {
+                const fileExtension = file.originalname.split('.').pop()
+                if(fileExtension === 'pdf') {
+                    return await this.attachmentService.createPdfAttachment(file.buffer, createdTransaction)
+                }
                 await this.attachmentService.createAttachment(file.buffer, createdTransaction)
             })
 
