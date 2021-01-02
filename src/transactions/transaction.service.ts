@@ -40,6 +40,7 @@ export default class TransactionService {
             ...lastparams
         }
         if(!dueStartDate || !dueEndDate) delete where.dueDate
+        if(!from || !to) delete where.transactionDate
         !name && delete where.name
 
         const [results, count] = await this.transactionRepository.findAndCount({
