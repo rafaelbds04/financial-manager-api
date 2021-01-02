@@ -7,7 +7,7 @@ class FindAllTransactionParams {
 
     @IsOptional()
     @IsNumber()
-    @Max(200)
+    @Max(600)
     @Type(() => Number)
     take?: number
 
